@@ -21,7 +21,7 @@ This repository was produced by following the [How To Use Ansible to Set Up a Pr
 
 * [x] `Reindex`（重新索引）
 
-* **使用分布式配置管理工具 **`ansible`** 来做集群的部署，一句话，对于集群的初始部署，配置批量更改，集群版本升级，重启故障结点都会快捷和安全许多。**
+**使用分布式配置管理工具 **`ansible`** 来做集群的部署，一句话，对于集群的初始部署，配置批量更改，集群版本升级，重启故障结点都会快捷和安全许多。**
 
 `Ubuntu 16.04`
 
@@ -285,7 +285,7 @@ es_max_open_files: 512000
 
 执行 `ansible-playbook elasticsearch.yml`
 
-* **硬件配置**
+**硬件配置**
 
 `15 台 Ubuntu 16.04 8核 32G SSD`
 
@@ -293,8 +293,30 @@ es_max_open_files: 512000
 
 `90 台 Ubuntu 16.04 8核 32G SSD`
 
-* **集群角色划分和隔离、 副本分片建议（控制**`shard`**数量）、容量的规划**
+**集群角色划分和隔离、 副本分片建议（控制**`shard`**数量）、容量的规划**
 
-* **映射与模板**
+
+
+**映射与模板**
+
+
+
+**`Elasticsearch` 配置**
+
+
+
+**`System` 配置**
+
+
+
+**安全机制**
+
+
+
+**`Reindex`（重新索引）**
+
+
+
+
 
 
