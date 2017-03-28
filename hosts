@@ -1,0 +1,14 @@
+[vpn]
+node01 vpn_ip=10.174.10.35 ansible_host=101.201.101.192
+node02 vpn_ip=10.45.139.80 ansible_host=101.201.143.135
+node03 vpn_ip=10.45.137.79 ansible_host=101.201.142.148
+[removevpn]
+
+[elasticsearch_master_nodes]
+node01
+
+[elasticsearch_master_data_nodes]
+node03
+
+[elasticsearch_client_nodes]
+node02
