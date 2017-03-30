@@ -21,6 +21,10 @@ This repository was produced by following the [How To Use Ansible to Set Up a Pr
 
 * [x] `Reindex`（重新索引）
 
+* [x] 分词
+
+* [x] 旧集群（状态、节点状态、集群节点）
+
 **使用分布式配置管理工具 **`ansible`** 来做集群的部署，一句话，对于集群的初始部署，配置批量更改，集群版本升级，重启故障结点都会快捷和安全许多。**
 
 `Ubuntu 16.04`
@@ -185,69 +189,6 @@ Shared connection to 101.201.142.148 closed.
 `elasticsearch.yml` 文件，`ansible playbook` 用来完成集群的初始部署、配置
 
 ```
-- hosts: elasticsearch_master_nodes
-roles:
-- { role: elasticsearch, es_instance_name: "node",
-es_config: {
-cluster.name: "test-cluster",
-discovery.zen.ping.unicast.hosts: "node01, node02, node03",
-network.host: "_tun0_, _local_",
-http.port: 9200,
-transport.tcp.port: 9300,
-node.data: false,
-node.master: true,
-bootstrap.memory_lock: true,
-discovery.zen.minimum_master_nodes: 2,
-gateway.recover_after_nodes: 2,
-action.destructive_requires_name: true,
-indices.breaker.total.limit: 70%,
-indices.breaker.fielddata.limit: 25%,
-indices.breaker.request.limit: 40%,
-indices.fielddata.cache.size: 20%,
-indices.queries.cache.size: 40%,
-indices.memory.index_buffer_size: 10%
-}
-}
-vars:
-es_templates: false
-es_scripts: true
-es_java_install: true
-es_major_version: "5.x"
-es_version: "5.2.2"
-es_heap_size: "2g"
-es_api_port: 9200
-es_max_map_count: 262144
-es_max_open_files: 512000
-
-- hosts: elasticsearch_master_data_nodes
-roles:
-- { role: elasticsearch, es_instance_name: "node",
-es_config: {
-cluster.name: "test-cluster",
-discovery.zen.ping.unicast.hosts: "node01, node02, node03",
-network.host: "_tun0_, _local_",
-http.port: 9200,
-transport.tcp.port: 9300,
-node.data: true,
-node.master: true,
-bootstrap.memory_lock: true,
-discovery.zen.minimum_master_nodes: 2,
-gateway.recover_after_nodes: 2,
-action.destructive_requires_name: true,
-indices.breaker.total.limit: 70%,
-indices.breaker.fielddata.limit: 25%,
-indices.breaker.request.limit: 40%,
-indices.fielddata.cache.size: 20%,
-indices.queries.cache.size: 40%,
-indices.memory.index_buffer_size: 10%
-}
-}
-vars:
-es_java_install: true
-es_major_version: "5.x"
-es_version: "5.2.2"
-es_heap_size: "2g"
-
 - hosts: elasticsearch_client_nodes
 roles:
 - { role: elasticsearch, es_instance_name: "node",
@@ -255,8 +196,8 @@ es_config: {
 cluster.name: "test-cluster",
 discovery.zen.ping.unicast.hosts: "node01, node02, node03",
 network.host: "_tun0_, _local_",
-http.port: 9200,
-transport.tcp.port: 9300,
+http.port: 9222,
+transport.tcp.port: 9333,
 node.data: false,
 node.master: false,
 bootstrap.memory_lock: true,
@@ -278,12 +219,107 @@ es_java_install: true
 es_major_version: "5.x"
 es_version: "5.2.2"
 es_heap_size: "2g"
-es_api_port: 9200
+es_api_port: 9222
+es_max_map_count: 262144
+es_max_open_files: 512000
+
+- hosts: elasticsearch_master_data_nodes
+roles:
+- { role: elasticsearch, es_instance_name: "node",
+es_config: {
+cluster.name: "test-cluster",
+discovery.zen.ping.unicast.hosts: "node01, node02, node03",
+network.host: "_tun0_, _local_",
+http.port: 9222,
+transport.tcp.port: 9333,
+node.data: true,
+node.master: true,
+bootstrap.memory_lock: true,
+discovery.zen.minimum_master_nodes: 2,
+gateway.recover_after_nodes: 2,
+action.destructive_requires_name: true,
+indices.breaker.total.limit: 70%,
+indices.breaker.fielddata.limit: 25%,
+indices.breaker.request.limit: 40%,
+indices.fielddata.cache.size: 20%,
+indices.queries.cache.size: 40%,
+indices.memory.index_buffer_size: 10%
+}
+}
+vars:
+es_templates: false
+es_scripts: true
+es_java_install: true
+es_major_version: "5.x"
+es_version: "5.2.2"
+es_heap_size: "2g"
+es_api_port: 9222
+es_max_map_count: 262144
+es_max_open_files: 512000
+
+- hosts: elasticsearch_master_nodes
+roles:
+- { role: elasticsearch, es_instance_name: "node",
+es_config: {
+cluster.name: "test-cluster",
+discovery.zen.ping.unicast.hosts: "node01, node02, node03",
+network.host: "_tun0_, _local_",
+http.port: 9222,
+transport.tcp.port: 9333,
+node.data: false,
+node.master: true,
+bootstrap.memory_lock: true,
+discovery.zen.minimum_master_nodes: 2,
+gateway.recover_after_nodes: 2,
+action.destructive_requires_name: true,
+indices.breaker.total.limit: 70%,
+indices.breaker.fielddata.limit: 25%,
+indices.breaker.request.limit: 40%,
+indices.fielddata.cache.size: 20%,
+indices.queries.cache.size: 40%,
+indices.memory.index_buffer_size: 10%
+}
+}
+vars:
+es_templates: false
+es_scripts: true
+es_java_install: true
+es_major_version: "5.x"
+es_version: "5.2.2"
+es_heap_size: "2g"
+es_api_port: 9222
 es_max_map_count: 262144
 es_max_open_files: 512000
 ```
 
-执行 `ansible-playbook elasticsearch.yml`
+执行 `ansible-playbook elasticsearch.yml`，成功如下：
+
+```
+TASK [elasticsearch : Update Native Roles] *************************************
+
+PLAY RECAP *********************************************************************
+node01 : ok=48 changed=0 unreachable=0 failed=0
+node02 : ok=49 changed=7 unreachable=0 failed=0
+node03 : ok=46 changed=1 unreachable=0 failed=0
+```
+
+`elasticsearch` 实例的`restart、start、stop`，`node_elasticsearch.service`中的`node`为上面`playbook`中定义的名称`es_instance_name: "node"`
+
+```
+systemctl restart node_elasticsearch.service
+systemctl start node_elasticsearch.service
+systemctl stop node_elasticsearch.service
+systemctl status node_elasticsearch.service
+```
+
+```
+service node_elasticsearch restart
+service node_elasticsearch start
+service node_elasticsearch stop
+service node_elasticsearch status
+```
+
+版本升级修改`playbook` 中 es\_version: "5.2.2" =&gt; es\_version: "5.3.0"，集群升级
 
 **硬件配置**
 
@@ -295,25 +331,66 @@ es_max_open_files: 512000
 
 **集群角色划分和隔离、 副本分片建议（控制**`shard`**数量）、容量的规划**
 
-
-
 **映射与模板**
 
+`Elasticsearch`** 配置**
 
-
-**`Elasticsearch` 配置**
-
-
-
-**`System` 配置**
-
-
+`System`** 配置**
 
 **安全机制**
 
+修改 elasticsearch http（9222） 和 transport （9333）默认端口
+
+nginx 安装 （某个client 节点安装，ufw 开启80、22端口）
+
+sudo apt-get -y install nginx
+
+/etc/nginx 目录下，
+
+启动：nginx
+
+检查：nginx -t
+
+修改配置重启：nginx -s reload
+
+查看nginx日志：/var/log/nginx
+
+修改配置目录：/etc/nginx/sites-available/default 文件
+
+```
+location /port/{
+proxy_set_header Host $http_host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_redirect off;
+proxy_pass http://127.0.0.1:9222/;
+}
+```
+
+防火墙 ufw \(所有节点开启，只开启22端口\)
+
+ufw enable\|status\|disable
+
+ufw allow 80
+
+ufw delete 80
+
+ufw reload 生效，有延时
+
+`Reindex`**（重新索引）**
+
+分词
+
+```
+curl -XPOST 'http://node01:9200/index1/_analyze?analyzer=ik_max_word&text=%e4%b8%ad%e5%8d%8e%e4%ba%ba%e6%b0%91%e5%85%b1%e5%92%8c%e5%9b%bd%e5%9b%bd%e6%ad%8c&pretty'
+```
+
+```
+curl -XPOST 'http://node01:9200/index1/_analyze?analyzer=ik_smart&text=%e4%b8%ad%e5%8d%8e%e4%ba%ba%e6%b0%91%e5%85%b1%e5%92%8c%e5%9b%bd%e5%9b%bd%e6%ad%8c&pretty'
+```
 
 
-**`Reindex`（重新索引）**
+
 
 
 
