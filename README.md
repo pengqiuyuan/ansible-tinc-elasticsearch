@@ -23,7 +23,7 @@ This repository was produced by following the [How To Use Ansible to Set Up a Pr
 
 * [x] 分词
 
-* [x] 旧集群（状态、节点状态、集群节点）
+* [x] 监控 `zabbix`（状态、节点状态、集群节点）
 
 **使用分布式配置管理工具 **`ansible`** 来做集群的部署，一句话，对于集群的初始部署，配置批量更改，集群版本升级，重启故障结点都会快捷和安全许多。**
 
@@ -61,7 +61,7 @@ cd /home/dev/ansible-tinc-elasticsearch
 vi ./hosts
 ```
 
-保存 `hosts`，三台机器 `vpn_ip` 为内网`ip`，`ansible_host`为公网`ip`
+保存 `hosts`，三台机器 `vpn_ip` 为内网`ip`，`ansible_host`为公网`ip`，`hosts` 文件修改完后记得执行 `ansible-playbook site.yml`成功
 
 ```
 [vpn]
@@ -130,14 +130,15 @@ node02 : ok=18 changed=15 unreachable=0 failed=0
 node03 : ok=18 changed=15 unreachable=0 failed=0ik 插件
 ```
 
-安装`ansible`的主机`192`执行如下命令，修改系统配置（`System` 配置后面介绍），`/home/dev/ansible-tinc-elasticsearch`
+安装`ansible`的主机`192`执行如下命令，`-s` `su` 权限，修改系统配置（`System` 配置后面介绍），`/home/dev/ansible-tinc-elasticsearch`
 
 ```
-ansible all -m raw -a '
+ansible all -s -m raw -a '
 grep "* - nofile 512000" /etc/security/limits.conf || echo "* - nofile 512000" >> /etc/security/limits.conf
 grep "elasticsearch - nproc unlimited" /etc/security/limits.conf || echo "elasticsearch - nproc unlimited" >> /etc/security/limits.conf
 grep "fs.file-max = 1024000" /etc/sysctl.conf || echo "fs.file-max = 1024000" >> /etc/sysctl.conf
 grep "vm.max_map_count = 262144" /etc/sysctl.conf || echo "vm.max_map_count = 262144" >> /etc/sysctl.conf
+grep "vm.swappiness = 1" /etc/sysctl.conf || echo "vm.swappiness = 1" >> /etc/sysctl.conf #禁用 swapping
 sysctl -p'
 ```
 
@@ -190,6 +191,7 @@ Shared connection to 101.201.142.148 closed.
 
 ```
 - hosts: elasticsearch_client_nodes
+become: yes
 roles:
 - { role: elasticsearch, es_instance_name: "node",
 es_config: {
@@ -224,6 +226,7 @@ es_max_map_count: 262144
 es_max_open_files: 512000
 
 - hosts: elasticsearch_master_data_nodes
+become: yes
 roles:
 - { role: elasticsearch, es_instance_name: "node",
 es_config: {
@@ -258,6 +261,7 @@ es_max_map_count: 262144
 es_max_open_files: 512000
 
 - hosts: elasticsearch_master_nodes
+become: yes
 roles:
 - { role: elasticsearch, es_instance_name: "node",
 es_config: {
@@ -345,13 +349,15 @@ nginx 安装 （某个client 节点安装，ufw 开启80、22端口）
 
 sudo apt-get -y install nginx
 
+80端口被占用，sudo fuser -k 80/tcp
+
 /etc/nginx 目录下，
 
-启动：nginx
+启动：sudo nginx
 
-检查：nginx -t
+检查：sudo nginx -t
 
-修改配置重启：nginx -s reload
+修改配置重启：sudo nginx -s reload
 
 查看nginx日志：/var/log/nginx
 
@@ -388,6 +394,67 @@ curl -XPOST 'http://node01:9200/index1/_analyze?analyzer=ik_max_word&text=%e4%b8
 ```
 curl -XPOST 'http://node01:9200/index1/_analyze?analyzer=ik_smart&text=%e4%b8%ad%e5%8d%8e%e4%ba%ba%e6%b0%91%e5%85%b1%e5%92%8c%e5%9b%bd%e5%9b%bd%e6%ad%8c&pretty'
 ```
+
+格式化和挂载数据盘，普通云盘`xvdb` 和 SSD云盘 `vdb`
+
+```
+1、如果执行了 fdisk -l 命令后，没有发现 /dev/vdb，则表示您的实例没有数据盘，因此无需挂载，请忽略这一章。
+2、运行 fdisk /dev/vdb，对数据盘进行分区。根据提示，依次输入 n，p，1，两次回车，wq，分区就开始了。
+3、运行 fdisk -l 命令，查看新的分区。新分区 vdb1 已经创建好。如下面示例中的/dev/vdb1。
+4、运行 mkfs.ext3 /dev/vdb1，对新分区进行格式化。格式化所需时间取决于数据盘大小。您也可自主决定选用其他文件格式，如 ext4 等。
+5、运行 echo /dev/vdb1 /mnt ext3 defaults 0 0 >> /etc/fstab 写入新分区信息。完成后，可以使用 cat /etc/fstab 命令查看。
+6、运行 mount /dev/vdb1 /mnt 挂载新分区，然后执行 df -h 查看分区。如果出现数据盘信息，说明挂载成功，可以使用新分区了。
+```
+
+创建用户 `sudo adduser idatage`
+
+添加 `root` 权限 `sudo vim /etc/sudoers` `idatage ALL=NOPASSWD:ALL`
+
+`wget`[`https://github.com/medcl/elasticsearch-analysis-ik/releases/tag/v5.2.2`](https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v5.2.2/elasticsearch-analysis-ik-5.2.2.zip)
+
+```
+ansible all -s -m copy -a 'src=/home/idatage/plugins/elasticsearch-analysis-ik-5.2.2.zip dest=/usr/share/elasticsearch/elasticsearch-analysis-ik-5.2.2.zip'
+ansible all -s -m raw -a 'ls /usr/share/elasticsearch'
+ansible all -s -m raw -a 'apt-get install unzip'
+ansible all -s -m raw -a 'unzip /usr/share/elasticsearch/elasticsearch-analysis-ik-5.2.2.zip -d /usr/share/elasticsearch/plugins/ik'
+ansible all -s -m raw -a 'ls /usr/share/elasticsearch/plugins/ik'
+```
+
+安装 `nginx`，权限，安装 `htpasswd`
+
+确认是否存在，`which htpasswd`
+
+`sudo apt-get -y install apache2-utils`
+
+生成`passfile`文件，`sudo htpasswd -c -d /etc/nginx/conf.d/pass_file idatage`
+
+修改配置目录：`/etc/nginx/sites-available/default` 文件，添加
+
+```
+auth_basic "Protected Elasticsearch";
+auth_basic_user_file /etc/nginx/conf.d/pass_file;
+```
+
+安装 `npm` ，`sudo apt-get install npm`
+
+安装 `elasticsearch-head`，`/home/idatage/plugins` 目录下
+
+```
+git clone git://github.com/mobz/elasticsearch-head.git
+cd elasticsearch-head
+sudo npm install
+sudo npm run start
+```
+
+```
+sudo apt-get install -y nodejs
+nodejs -v
+npm -v
+sudo npm install -g n
+sudo n latest
+```
+
+
 
 
 
