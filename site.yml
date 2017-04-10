@@ -1,10 +1,12 @@
 ---
 
 - hosts: vpn
+  become: yes
   roles:
     - tinc
 
-- hosts: removevpn
+- hosts: removevpn 
+  become: yes
   roles:
     - tinc-remove
  
