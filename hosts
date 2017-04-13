@@ -13,7 +13,7 @@ node11 vpn_ip=10.28.57.116 ansible_host=59.110.52.161
 node12 vpn_ip=10.28.119.144 ansible_host=59.110.53.67
 node13 vpn_ip=10.28.50.127 ansible_host=59.110.49.143
 node14 vpn_ip=10.28.116.251 ansible_host=47.93.89.12
-node15 vpn_ip=10.28.119.37 ansible_host=47.93.84.113
+node15 vpn_ip=10.28.119.31 ansible_host=47.93.84.113
 
 [removevpn]
 
