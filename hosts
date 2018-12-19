@@ -1,19 +1,11 @@
 [vpn]
-node01 vpn_ip=10.28.59.165 ansible_host=59.110.52.213
-node02 vpn_ip=10.27.240.159 ansible_host=59.110.52.53
-node03 vpn_ip=10.27.73.189 ansible_host=59.110.52.189
-node04 vpn_ip=10.28.56.143 ansible_host=59.110.21.206
-node05 vpn_ip=10.28.120.2 ansible_host=59.110.23.166
-node06 vpn_ip=10.28.60.253 ansible_host=59.110.20.136
-node07 vpn_ip=10.28.56.170 ansible_host=47.93.91.234
-node08 vpn_ip=10.27.247.231 ansible_host=59.110.51.128
-node09 vpn_ip=10.28.120.15 ansible_host=59.110.23.133
-node10 vpn_ip=10.28.57.102 ansible_host=59.110.53.26
-node11 vpn_ip=10.28.57.116 ansible_host=59.110.52.161
-node12 vpn_ip=10.28.119.144 ansible_host=59.110.53.67
-node13 vpn_ip=10.28.50.127 ansible_host=59.110.49.143
-node14 vpn_ip=10.28.116.251 ansible_host=47.93.89.12
-node15 vpn_ip=10.28.119.31 ansible_host=47.93.84.113
+node01 vpn_ip=10.25.129.72 ansible_host=59.110.113.167
+node02 vpn_ip=10.25.128.48 ansible_host=60.205.153.173
+node03 vpn_ip=10.25.128.219 ansible_host=59.110.114.63
+node04 vpn_ip=10.25.129.104 ansible_host=60.205.194.231
+node05 vpn_ip=10.25.128.98 ansible_host=59.110.114.213
+node06 vpn_ip=10.25.129.25 ansible_host=101.201.124.99
+node07 vpn_ip=10.25.129.205 ansible_host=101.201.124.166
 
 [removevpn]
 
@@ -25,17 +17,9 @@ node04
 node05
 
 [elasticsearch_data_nodes]
-node06
-node07
-node08
-node09
-node10
-node11
-node12
-node13
-node14
-node15
-
-[elasticsearch_client_nodes]
 node01
 node02
+node06
+node07
+
+[elasticsearch_client_nodes]
